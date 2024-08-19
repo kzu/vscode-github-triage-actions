@@ -91,19 +91,12 @@ export class ReviewReminder {
 		// Inject a few extra repos that aren't in the VS Code org
 		yield { owner: { login: 'microsoft' }, name: 'vscode-jupyter' };
 		yield { owner: { login: 'microsoft' }, name: 'vscode-python' };
-		const it = octokit.paginate.iterator(octokit.rest.apps.listReposAccessibleToInstallation, {
-			per_page: 100,
-		});
-
-		for await (const response of it) {
-			console.log(`Processing GitHubApp installation ${response.data.repositories}`);
-			for (const repository of response.data.repositories) {
-				if (repository.archived) {
-					continue;
-				}
-
-				yield repository;
+		const response = await octokit.rest.apps.listInstallationReposForAuthenticatedUser();
+		for (const repository of response.data.repositories) {
+			if (repository.archived) {
+				continue;
 			}
+			yield repository;
 		}
 	}
 
@@ -123,6 +116,10 @@ export class ReviewReminder {
 		const durations = [];
 
 		console.log(`Processing ${repositoryInfo.owner}/${repositoryInfo.repo}`);
+		const a = 2;
+		if (a === 2) {
+			return [];
+		}
 
 		// The timeslot to query for
 		const timeWindowToQuery = new Date();
@@ -272,6 +269,15 @@ export class ReviewReminder {
 			const repo = repository.name;
 			data = data.concat(await this.processRepository(this.octokit, { owner, repo }, teamMembers));
 		}
+
+		const a = 2;
+		if (a === 2) {
+			return {
+				topReviewers: [],
+				bottomReviewers: [],
+			};
+		}
+
 		// Calculate number of reviews done by each reviewer
 		const monthlyStats = new Map<string, number>();
 		const weeklyStats = new Map<string, number>();
