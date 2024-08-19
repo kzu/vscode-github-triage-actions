@@ -96,18 +96,19 @@ export class ReviewReminder {
 		});
 
 		for await (const response of it) {
-			console.log(`Processing GitHubApp installation ${response.data.total_count}`);
-			const repositories = response.data.repositories;
-			repositories.map((r) => console.log(r.name));
-			if (Array.isArray(repositories)) {
-				for (const repository of repositories) {
-					if (repository.archived) {
-						continue;
-					}
+			console.log(JSON.stringify(response, null, 2));
+			// console.log(`Processing GitHubApp installation ${response.data.total_count}`);
+			// const repositories = response.data.repositories;
+			// repositories.map((r) => console.log(r.name));
+			// if (Array.isArray(repositories)) {
+			// 	for (const repository of repositories) {
+			// 		if (repository.archived) {
+			// 			continue;
+			// 		}
 
-					yield repository;
-				}
-			}
+			// 		yield repository;
+			// 	}
+			// }
 		}
 	}
 
