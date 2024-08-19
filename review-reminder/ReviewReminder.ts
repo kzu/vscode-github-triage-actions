@@ -91,15 +91,23 @@ export class ReviewReminder {
 		// Inject a few extra repos that aren't in the VS Code org
 		yield { owner: { login: 'microsoft' }, name: 'vscode-jupyter' };
 		yield { owner: { login: 'microsoft' }, name: 'vscode-python' };
-		const data = await octokit.paginate(octokit.rest.apps.listReposAccessibleToInstallation, {
+		const it = octokit.paginate.iterator(octokit.rest.apps.listReposAccessibleToInstallation, {
 			per_page: 100,
 		});
 
-		for (const repository of data.repositories) {
-			if (repository.archived) {
-				continue;
+		for await (const response of it) {
+			console.log(`Processing GitHubApp installation ${response.data.total_count}`);
+			const repositories = response.data.repositories;
+			if (Array.isArray(repositories)) {
+				repositories.map((r) => console.log(r.name));
+				for (const repository of repositories) {
+					if (repository.archived) {
+						continue;
+					}
+
+					yield repository;
+				}
 			}
-			yield repository;
 		}
 	}
 
