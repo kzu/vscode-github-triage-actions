@@ -63,9 +63,10 @@ class ReviewReminder {
             per_page: 100,
         });
         for await (const response of it) {
-            // console.log(JSON.stringify(response, null, 2));
-            console.log(response.data.total_count);
-            console.log(JSON.stringify(response.data));
+            const repos = response.data;
+            for (const repo of repos) {
+                yield repo;
+            }
             // console.log(`Processing GitHubApp installation ${response.data.total_count}`);
             // const repositories = response.data.repositories;
             // repositories.map((r) => console.log(r.name));

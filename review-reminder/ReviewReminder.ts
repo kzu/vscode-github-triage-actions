@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
+import { Endpoints } from '@octokit/types';
 import { HeaderBlock, KnownBlock, SectionBlock, WebClient } from '@slack/web-api';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 import { ITeamMember } from '../api/vscodeToolsTypes';
@@ -96,10 +97,11 @@ export class ReviewReminder {
 		});
 
 		for await (const response of it) {
-			// console.log(JSON.stringify(response, null, 2));
-			console.log(response.data.total_count);
-			console.log(JSON.stringify(response.data));
-
+			const repos =
+				response.data as unknown as Endpoints['GET /installation/repositories']['response']['data']['repositories'];
+			for (const repo of repos) {
+				yield repo;
+			}
 			// console.log(`Processing GitHubApp installation ${response.data.total_count}`);
 			// const repositories = response.data.repositories;
 			// repositories.map((r) => console.log(r.name));
