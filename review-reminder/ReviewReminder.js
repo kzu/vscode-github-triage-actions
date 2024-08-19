@@ -59,7 +59,7 @@ class ReviewReminder {
         // Inject a few extra repos that aren't in the VS Code org
         yield { owner: { login: 'microsoft' }, name: 'vscode-jupyter' };
         yield { owner: { login: 'microsoft' }, name: 'vscode-python' };
-        const response = await octokit.rest.apps.listInstallationReposForAuthenticatedUser();
+        const response = await octokit.rest.apps.listReposAccessibleToInstallation();
         for (const repository of response.data.repositories) {
             if (repository.archived) {
                 continue;
