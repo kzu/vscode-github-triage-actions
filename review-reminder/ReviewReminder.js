@@ -63,7 +63,7 @@ class ReviewReminder {
             per_page: 100,
         });
         for await (const response of it) {
-            console.log(`Processing GitHubApp installation ${response.data}`);
+            console.log(`Processing GitHubApp installation ${response.data.repositories}`);
             for (const repository of response.data.repositories) {
                 if (repository.archived) {
                     continue;

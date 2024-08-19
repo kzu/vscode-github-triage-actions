@@ -96,7 +96,7 @@ export class ReviewReminder {
 		});
 
 		for await (const response of it) {
-			console.log(`Processing GitHubApp installation ${response.data}`);
+			console.log(`Processing GitHubApp installation ${response.data.repositories}`);
 			for (const repository of response.data.repositories) {
 				if (repository.archived) {
 					continue;
