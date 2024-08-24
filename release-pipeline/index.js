@@ -21,15 +21,7 @@ class ReleasePipelineAction extends Action_1.Action {
         await (0, ReleasePipeline_1.enrollIssue)(issue, notYetReleasedLabel);
     }
     async onTriggered(github) {
-        const query = `is:issue is:closed label:unreleased -label:insiders-released is:issue is:closed closed:2024-07-25..2024-08-22`;
-        (0, utils_1.safeLog)('Query:', query);
-        for await (const page of github.query({ q: query })) {
-            for (const issue of page) {
-                await issue.removeLabel(notYetReleasedLabel);
-                await issue.addLabel(insidersReleasedLabel);
-            }
-            // await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
-        }
+        await new ReleasePipeline_1.ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
     }
     async onCommented(issue, comment) {
         if (comment.includes('closedWith')) {

@@ -17,8 +17,13 @@ class ReleasePipeline {
         if (!latestRelease)
             throw Error('Error loading latest release');
         const query = `is:closed label:${this.notYetReleasedLabel}`;
+        let count = 0;
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
+                count++;
+                if (count > 1) {
+                    return;
+                }
                 const issueData = await issue.getIssue();
                 if (issueData.labels.includes(this.notYetReleasedLabel) && issueData.open === false) {
                     await this.update(issue, latestRelease);
@@ -43,8 +48,8 @@ class ReleasePipeline {
 			Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been releaased`);
     }
     async update(issue, latestRelease) {
-        var _a;
-        const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
+        const closingHash = '598184c50e520f0cbc605dbe4946769646a3c783';
+        (0, utils_1.safeLog)(`closingHash: ${closingHash}`);
         if (!closingHash) {
             await issue.removeLabel(this.notYetReleasedLabel);
             await this.commentUnableToFindCommitMessage(issue);
@@ -54,16 +59,13 @@ class ReleasePipeline {
             .releaseContainsCommit(latestRelease.version, closingHash)
             .catch(() => 'unknown');
         if (releaseContainsCommit === 'yes') {
-            await issue.removeLabel(this.notYetReleasedLabel);
-            await issue.addLabel(this.insidersReleasedLabel);
+            (0, utils_1.safeLog)('Issue contains commit');
         }
         else if (releaseContainsCommit === 'no') {
-            await issue.removeLabel(this.insidersReleasedLabel);
-            await issue.addLabel(this.notYetReleasedLabel);
+            (0, utils_1.safeLog)('Issue does not contain commit');
         }
         else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
-            await issue.removeLabel(this.notYetReleasedLabel);
-            await this.commentUnableToFindCommitMessage(issue);
+            (0, utils_1.safeLog)('Error');
         }
     }
 }
@@ -72,8 +74,6 @@ const enrollIssue = async (issue, notYetReleasedLabel) => {
     var _a;
     const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
     if (closingHash) {
-        const issueData = await issue.getIssue();
-        (0, utils_1.safeLog)(`enrolling issue ${issueData === null || issueData === void 0 ? void 0 : issueData.number} with closing hash ${closingHash}`);
         await issue.addLabel(notYetReleasedLabel);
         // Get the milestone linked to the current release and set it if the issue doesn't have one
         const releaseMilestone = (await issue.getIssue()).milestone

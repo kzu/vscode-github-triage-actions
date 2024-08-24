@@ -18,9 +18,13 @@ export class ReleasePipeline {
 		if (!latestRelease) throw Error('Error loading latest release');
 
 		const query = `is:closed label:${this.notYetReleasedLabel}`;
-
+		let count = 0;
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
+				count++;
+				if (count > 1) {
+					return;
+				}
 				const issueData = await issue.getIssue();
 				if (issueData.labels.includes(this.notYetReleasedLabel) && issueData.open === false) {
 					await this.update(issue, latestRelease);
@@ -48,8 +52,8 @@ export class ReleasePipeline {
 	}
 
 	private async update(issue: GitHubIssue, latestRelease: Release) {
-		const closingHash = (await issue.getClosingInfo())?.hash;
-
+		const closingHash = '598184c50e520f0cbc605dbe4946769646a3c783';
+		safeLog(`closingHash: ${closingHash}`);
 		if (!closingHash) {
 			await issue.removeLabel(this.notYetReleasedLabel);
 			await this.commentUnableToFindCommitMessage(issue);
@@ -61,14 +65,11 @@ export class ReleasePipeline {
 			.catch(() => 'unknown' as const);
 
 		if (releaseContainsCommit === 'yes') {
-			await issue.removeLabel(this.notYetReleasedLabel);
-			await issue.addLabel(this.insidersReleasedLabel);
+			safeLog('Issue contains commit');
 		} else if (releaseContainsCommit === 'no') {
-			await issue.removeLabel(this.insidersReleasedLabel);
-			await issue.addLabel(this.notYetReleasedLabel);
+			safeLog('Issue does not contain commit');
 		} else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
-			await issue.removeLabel(this.notYetReleasedLabel);
-			await this.commentUnableToFindCommitMessage(issue);
+			safeLog('Error');
 		}
 	}
 }
@@ -76,8 +77,6 @@ export class ReleasePipeline {
 export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: string) => {
 	const closingHash = (await issue.getClosingInfo())?.hash;
 	if (closingHash) {
-		const issueData = await issue.getIssue();
-		safeLog(`enrolling issue ${issueData?.number} with closing hash ${closingHash}`);
 		await issue.addLabel(notYetReleasedLabel);
 		// Get the milestone linked to the current release and set it if the issue doesn't have one
 		const releaseMilestone = (await issue.getIssue()).milestone
