@@ -23,13 +23,12 @@ class ReleasePipelineAction extends Action {
 	}
 
 	async onTriggered(github: OctoKit) {
-		const query = `is:issue is:closed -label:unreleased -label:insiders-released is:issue is:closed  closed:2024-07-25..2024-08-23`;
+		const query = `is:issue is:closed label:unreleased -label:insiders-released is:issue is:closed closed:2024-07-25..2024-08-22`;
 		safeLog('Query:', query);
-		let count = 1;
 		for await (const page of github.query({ q: query })) {
-			safeLog('Page:', count++);
 			for (const issue of page) {
-				await enrollIssue(issue, notYetReleasedLabel);
+				await issue.removeLabel(notYetReleasedLabel);
+				await issue.addLabel(insidersReleasedLabel);
 			}
 			// await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
 		}

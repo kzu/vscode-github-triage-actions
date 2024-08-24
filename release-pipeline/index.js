@@ -21,13 +21,12 @@ class ReleasePipelineAction extends Action_1.Action {
         await (0, ReleasePipeline_1.enrollIssue)(issue, notYetReleasedLabel);
     }
     async onTriggered(github) {
-        const query = `is:issue is:closed -label:unreleased -label:insiders-released is:issue is:closed  closed:2024-07-25..2024-08-23`;
+        const query = `is:issue is:closed label:unreleased -label:insiders-released is:issue is:closed closed:2024-07-25..2024-08-22`;
         (0, utils_1.safeLog)('Query:', query);
-        let count = 1;
         for await (const page of github.query({ q: query })) {
-            (0, utils_1.safeLog)('Page:', count++);
             for (const issue of page) {
-                await (0, ReleasePipeline_1.enrollIssue)(issue, notYetReleasedLabel);
+                await issue.removeLabel(notYetReleasedLabel);
+                await issue.addLabel(insidersReleasedLabel);
             }
             // await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
         }
