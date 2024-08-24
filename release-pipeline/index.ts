@@ -5,7 +5,7 @@
 
 import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
-import { getRequiredInput } from '../common/utils';
+import { getRequiredInput, safeLog } from '../common/utils';
 import { enrollIssue, unenrollIssue } from './ReleasePipeline';
 
 const notYetReleasedLabel = getRequiredInput('notYetReleasedLabel');
@@ -24,7 +24,10 @@ class ReleasePipelineAction extends Action {
 
 	async onTriggered(github: OctoKit) {
 		const query = `is:issue is:closed -label:unreleased -label:insiders-released closed:2024-08-17`;
+		safeLog('Query:', query);
+		let count = 1;
 		for await (const page of github.query({ q: query })) {
+			safeLog('Page:', count++);
 			for (const issue of page) {
 				await enrollIssue(issue, notYetReleasedLabel);
 			}

@@ -22,7 +22,10 @@ class ReleasePipelineAction extends Action_1.Action {
     }
     async onTriggered(github) {
         const query = `is:issue is:closed -label:unreleased -label:insiders-released closed:2024-08-17`;
+        (0, utils_1.safeLog)('Query:', query);
+        let count = 1;
         for await (const page of github.query({ q: query })) {
+            (0, utils_1.safeLog)('Page:', count++);
             for (const issue of page) {
                 await (0, ReleasePipeline_1.enrollIssue)(issue, notYetReleasedLabel);
             }
