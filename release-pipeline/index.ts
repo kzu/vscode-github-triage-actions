@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKit, OctoKitIssue } from '../api/octokit';
-import { getRequiredInput } from '../common/utils';
-import { ReleasePipeline, enrollIssue, unenrollIssue } from './ReleasePipeline';
 import { Action } from '../common/Action';
+import { getRequiredInput } from '../common/utils';
+import { enrollIssue, unenrollIssue } from './ReleasePipeline';
 
 const notYetReleasedLabel = getRequiredInput('notYetReleasedLabel');
 const insidersReleasedLabel = getRequiredInput('insidersReleasedLabel');
@@ -23,7 +23,13 @@ class ReleasePipelineAction extends Action {
 	}
 
 	async onTriggered(github: OctoKit) {
-		await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
+		const query = `is:issue is:closed -label:unreleased -label:insiders-released closed:2024-08-17`;
+		for await (const page of github.query({ q: query })) {
+			for (const issue of page) {
+				await enrollIssue(issue, notYetReleasedLabel);
+			}
+			// await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
+		}
 	}
 
 	async onCommented(issue: OctoKitIssue, comment: string) {

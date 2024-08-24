@@ -76,6 +76,8 @@ export class ReleasePipeline {
 export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: string) => {
 	const closingHash = (await issue.getClosingInfo())?.hash;
 	if (closingHash) {
+		const issueData = await issue.getIssue();
+		safeLog(`enrolling issue ${issueData?.number} with closing hash ${closingHash}`);
 		await issue.addLabel(notYetReleasedLabel);
 		// Get the milestone linked to the current release and set it if the issue doesn't have one
 		const releaseMilestone = (await issue.getIssue()).milestone

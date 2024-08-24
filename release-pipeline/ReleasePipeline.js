@@ -72,6 +72,8 @@ const enrollIssue = async (issue, notYetReleasedLabel) => {
     var _a;
     const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
     if (closingHash) {
+        const issueData = await issue.getIssue();
+        (0, utils_1.safeLog)(`enrolling issue ${issueData === null || issueData === void 0 ? void 0 : issueData.number} with closing hash ${closingHash}`);
         await issue.addLabel(notYetReleasedLabel);
         // Get the milestone linked to the current release and set it if the issue doesn't have one
         const releaseMilestone = (await issue.getIssue()).milestone
