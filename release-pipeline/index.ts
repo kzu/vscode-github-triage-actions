@@ -23,7 +23,7 @@ class ReleasePipelineAction extends Action {
 	}
 
 	async onTriggered(github: OctoKit) {
-		const query = `is:issue is:closed -label:unreleased -label:insiders-released closed:2024-08-17`;
+		const query = `is:issue is:closed -label:unreleased -label:insiders-released closed:2024-08-23`;
 		safeLog('Query:', query);
 		let count = 1;
 		for await (const page of github.query({ q: query })) {
