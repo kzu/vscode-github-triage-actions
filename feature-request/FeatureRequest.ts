@@ -25,23 +25,15 @@ export class FeatureRequestQueryer {
 	constructor(private github: GitHub, private config: FeatureRequestConfig) {}
 
 	async run(): Promise<void> {
-		let query = `repo:${this.github.repoOwner}/${this.github.repoName} is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
-		query += this.config.labelsToExclude.map((l) => `-label:"${l}"`).join(' ');
+		const query = `repo:${this.github.repoOwner}/${this.github.repoName} is:issue is:open label:feature-request no:milestone created:2024-07-25..2024-08-22`;
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue();
-				if (
-					issueData.open &&
-					issueData.milestone?.milestoneId === this.config.milestones.candidateID &&
-					issueData.labels.includes(this.config.featureRequestLabel) &&
-					!issueData.labels.some((issueLabel) =>
-						this.config.labelsToExclude.some((excludeLabel) => issueLabel === excludeLabel),
-					)
-				) {
-					await this.actOn(issue);
-				} else {
-					safeLog('Query returned an invalid issue:', issueData.number);
+				if (await this.github.hasWriteAccess(issueData.author.name)) {
+					return;
 				}
+
+				return issue.setMilestone(12);
 			}
 		}
 	}
@@ -132,7 +124,7 @@ export class FeatureRequestOnLabel {
 			return;
 		}
 
-		return this.github.setMilestone(this.milestone);
+		return this.github.setMilestone(12);
 	}
 }
 
