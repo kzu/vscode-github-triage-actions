@@ -21,7 +21,7 @@ class FeatureRequestQueryer {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
                 if (await this.github.hasWriteAccess(issueData.author.name)) {
-                    return;
+                    continue;
                 }
                 return issue.setMilestone(12);
             }
