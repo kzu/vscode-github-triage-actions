@@ -25,6 +25,9 @@ inputs:
   action:
     description: Action name for a triggered action. Otherwise, this is obtained from the github context.
     required: false
+  payload:
+    description: Payload object for the github action
+    required: true
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true
