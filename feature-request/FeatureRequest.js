@@ -16,14 +16,14 @@ class FeatureRequestQueryer {
         this.config = config;
     }
     async run() {
-        const query = `repo:${this.github.repoOwner}/${this.github.repoName} is:issue is:open label:feature-request no:milestone created:2024-07-25..2024-08-22`;
+        const query = `repo:${this.github.repoOwner}/${this.github.repoName} is:issue is:open label:feature-request no:milestone created:2024-07-25..2024-08-24`;
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
                 if (await this.github.hasWriteAccess(issueData.author.name)) {
                     continue;
                 }
-                return issue.setMilestone(12);
+                await issue.setMilestone(this.config.milestones.candidateID);
             }
         }
     }
